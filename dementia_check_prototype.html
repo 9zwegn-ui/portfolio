@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>치매체크 개선안 프로토타입</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f4f1;--card:#fff;--ink:#222;--sub:#666;--line:#e5e0da;--pri:#f15a22;--priS:#fde8de;--warn:#fff6cc;--red:#d92d20;--ok:#2e9e5b;--mid:#f0b429}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181614;--card:#25211e;--ink:#f2eeea;--sub:#a9a19a;--line:#3a3531;--priS:#4a2a1c;--warn:#4a4218}}
+:root[data-theme="dark"]{--bg:#181614;--card:#25211e;--ink:#f2eeea;--sub:#a9a19a;--line:#3a3531;--priS:#4a2a1c;--warn:#4a4218}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.5}
+header{padding:20px 16px 8px;max-width:980px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}header p{margin:0;color:var(--sub);font-size:13px}
+.wrap{display:flex;gap:24px;max-width:980px;margin:0 auto;padding:12px 16px 32px;flex-wrap:wrap;justify-content:center}
+.phone{width:340px;max-width:100%;height:640px;background:var(--card);border:8px solid #2b2724;border-radius:34px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.top{background:var(--pri);color:#fff;padding:12px 14px;font-weight:700;font-size:15px;text-align:center}
+.scr{flex:1;overflow-y:auto;padding:14px}
+.nav{display:flex;border-top:1px solid var(--line);background:var(--card)}
+.nav button{flex:1;border:0;background:none;color:var(--sub);padding:10px 2px;font-size:11px;cursor:pointer}
+.nav button.on{color:var(--pri);font-weight:700}
+.tabs{display:flex;background:var(--priS);border-radius:10px;padding:3px;margin-bottom:12px}
+.tabs button{flex:1;border:0;background:none;padding:8px;border-radius:8px;font-weight:600;color:var(--sub);cursor:pointer}
+.tabs button.on{background:var(--pri);color:#fff}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;cursor:pointer;background:var(--card)}
+.card b{display:block;font-size:14px}.card small{color:var(--sub);font-size:11px}
+.btn{border:0;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%;background:var(--pri);color:#fff}
+.btn.o{background:none;border:1.5px solid var(--pri);color:var(--pri)}
+.row{display:flex;gap:8px}
+.opt{display:block;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:13px}
+.opt.on{border-color:var(--pri);background:var(--priS);font-weight:700}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;margin:10px 0 12px;font-size:14px}
+.bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;width:10%;background:var(--pri)}
+.notice{background:var(--warn);border-radius:10px;padding:10px;font-size:12px;margin:12px 0}
+.gauge{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:26px 0 4px;position:relative}
+.gauge i{flex:1}.mk{position:absolute;top:-22px;left:58%;font-size:11px;font-weight:700;color:var(--pri)}
+.sos{background:var(--red);color:#fff;border:0;border-radius:10px;padding:14px;font-weight:800;font-size:15px;width:100%;cursor:pointer;margin-bottom:12px}
+.faces{display:flex;align-items:center;justify-content:space-around;margin:10px 0}
+.faces div{text-align:center;font-size:11px;color:var(--sub)}
+.side{width:340px;max-width:100%}
+.side h2{font-size:15px;margin:0 0 8px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card);cursor:pointer;font-size:13px}
+.step.on{border-color:var(--pri);background:var(--priS)}
+.step span{background:var(--pri);color:#fff;border-radius:50%;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.step small{display:block;color:var(--sub);font-size:11px}
+.fine{font-size:11px;color:var(--sub);margin-top:10px}
+</style>
+</head>
+<body>
+<header><h1>🧠 치매체크 개선안 프로토타입</h1><p>실제 서비스가 아닌 시연용 화면입니다. 화면 하단 메뉴나 오른쪽 흐름 목록을 눌러 이동해 보세요.</p></header>
+<div class="wrap">
+<div class="phone"><div class="top" id="ttl"></div><div class="scr" id="scr"></div>
+<div class="nav" id="nav"></div></div>
+<div class="side"><h2>정보구조 · 사용자 흐름</h2><div id="flow"></div>
+<div class="fine">※ 5단계 응답 세분화는 검증된 척도(KDSQ-C)의 공식 채점 기준(3단계)을 벗어난 콘텐츠 설계 제안이며, 실제 적용 시 별도 임상 검증이 필요합니다.</div></div>
+</div>
+<script>
+var S={home:{t:"치매체크",n:"메인",d:"환자·보호자·봉사 대상별 3분할, 기능이 드러나는 메뉴명"},
+quiz:{t:"치매 위험도 검사",n:"검사",d:"응답을 빈도 기준 5단계로 세분화"},
+result:{t:"검사 결과",n:"결과",d:"그래프 시각화 + 안전 문구 강조 + 다음 행동 버튼"},
+wander:{t:"실종 예방·위치 확인",n:"실종예방",d:"AI 노화 예측 얼굴 + 상단 고정 신고 버튼"}};
+var order=["home","quiz","result","wander"],cur="home",tab=0,sel=-1;
+var TABS=[["환자용",[["치매 위험도 검사","구: 치매위험체크","quiz"],["뇌 건강 훈련","구: 뇌건강트레이너","quiz"]]],
+["보호자용",[["돌봄 기록 다이어리","구: 돌봄다이어리",""],["실종 예방·위치 확인","구: 배회감지서비스","wander"]]],
+["봉사용",[["치매 봉사 신청·안내","구: 치매파트너 알아보기",""]]]];
+var OPTS=["전혀 없다","한 달에 몇 번 있다","주 1회 정도 있다","주 2~3회 있다","거의 매일 있다"];
+function face(age,c){return '<svg width="64" height="72" viewBox="0 0 64 72"><ellipse cx="32" cy="38" rx="22" ry="27" fill="'+c+'"/><path d="M10 30q22-30 44 0q-6-14-22-14t-22 14" fill="'+(age?'#cfcfcf':'#555')+'"/><circle cx="24" cy="38" r="2.5" fill="#333"/><circle cx="40" cy="38" r="2.5" fill="#333"/><path d="M25 52q7 5 14 0" stroke="#333" fill="none" stroke-width="2"/>'+(age?'<path d="M18 30h6M40 30h6M22 45q3 2 6 0M36 45q3 2 6 0" stroke="#9a7b62" stroke-width="1.2" fill="none"/>':'')+'</svg>'}
+function render(){
+document.getElementById("ttl").textContent=S[cur].t;
+var h="";
+if(cur=="home"){h='<div class="tabs">'+TABS.map(function(x,i){return '<button class="'+(i==tab?'on':'')+'" onclick="tab='+i+';render()">'+x[0]+'</button>'}).join("")+'</div>'+
+TABS[tab][1].map(function(c){return '<div class="card" onclick="'+(c[2]?"go('"+c[2]+"')":"")+'"><b>'+c[0]+'</b><small>'+c[1]+'</small></div>'}).join("");}
+if(cur=="quiz"){h='<div style="font-size:12px;display:flex;justify-content:space-between"><b>진행상황</b><span>3 / 30</span></div><div class="bar"><i></i></div><div class="q">같은 질문을 반복해서 한다.</div>'+
+OPTS.map(function(o,i){return '<button class="opt '+(i==sel?'on':'')+'" onclick="sel='+i+';render()">'+o+'</button>'}).join("")+
+'<div class="row" style="margin-top:6px"><button class="btn o" onclick="go(\'home\')">이전</button><button class="btn" onclick="go(\'result\')">다음</button></div>';}
+if(cur=="result"){h='<b style="font-size:14px">나의 인지 위험도</b><div class="gauge"><i style="background:var(--ok)"></i><i style="background:var(--mid)"></i><i style="background:var(--red)"></i><span class="mk">▼ 나의 점수</span></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub)"><span>정상</span><span>경계</span><span>위험</span></div>'+
+'<div style="margin-top:14px;font-size:12px;color:var(--sub)">지난 검사 대비 추이</div><svg viewBox="0 0 280 60" width="100%"><polyline points="10,45 90,38 170,30 260,18" fill="none" stroke="var(--pri)" stroke-width="3"/><circle cx="260" cy="18" r="4" fill="var(--pri)"/></svg>'+
+'<div class="notice">⚠️ 이 결과는 참고용이며, 정확한 진단은 전문기관에서 받으시기 바랍니다.</div>'+
+'<div class="row"><button class="btn o" onclick="go(\'quiz\')">재검사 하기</button><button class="btn">즉시 상담 연결</button></div>';}
+if(cur=="wander"){h='<button class="sos">🚨 바로 신고 (112)</button><div class="card" style="cursor:default"><b>실종 어르신 정보 (예시)</b><small>실종 시점: 2010년 · 당시 60세</small><div class="faces"><div>'+face(0,"#f3d3b5")+'<br>등록 당시</div><div style="font-size:22px">➜</div><div>'+face(1,"#e7c4a4")+'<br>AI 추정 현재 (74세)</div></div><small>AI 노화 예측 이미지는 참고용이며, 가상의 일러스트입니다.</small></div><button class="btn o">마지막 위치 확인</button>';}
+document.getElementById("scr").innerHTML=h;
+document.getElementById("nav").innerHTML=order.map(function(k){return '<button class="'+(k==cur?'on':'')+'" onclick="go(\''+k+'\')">'+S[k].n+'</button>'}).join("");
+document.getElementById("flow").innerHTML=order.map(function(k,i){return '<div class="step '+(k==cur?'on':'')+'" onclick="go(\''+k+'\')"><span>'+(i+1)+'</span><div><b>'+S[k].t+'</b><small>'+S[k].d+'</small></div></div>'}).join("");}
+function go(k){cur=k;render()}
+render();
+</script>
+</body>
+</html>
